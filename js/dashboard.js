@@ -1,5 +1,5 @@
-const API_URL = "http://localhost:3000/api/emergency";
-const DEMO_URL = "http://localhost:3000/api/emergency/demo";
+const API_URL = "https://emergencyai.onrender.com/api/emergency";
+const DEMO_URL = "https://emergencyai.onrender.com/api/emergency/demo";
 
 let demoRunning = false;
 
