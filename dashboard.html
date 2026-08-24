@@ -1,0 +1,547 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Emergency AI | Command Center</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <main class="dashboard">
+
+        <!-- ==============================
+             HEADER
+        =============================== -->
+
+        <header class="dashboard-header">
+
+            <div class="brand">
+                <div class="brand-icon">🚑</div>
+
+                <div>
+                    <h1>Emergency AI</h1>
+                    <span>Emergency Response Command Center</span>
+                </div>
+            </div>
+
+            <div class="header-right">
+
+                <div class="incident-id">
+                    <span>INCIDENT</span>
+                    <strong id="headerEmergencyId">—</strong>
+                </div>
+
+                <div class="live-status">
+                    <span class="live-dot"></span>
+                    SYSTEM LIVE
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- ==============================
+             TOP STATUS BAR
+        =============================== -->
+
+        <section class="status-bar">
+
+            <div class="status-item">
+                <span class="status-label">CALL</span>
+                <strong id="callStatus">WAITING</strong>
+            </div>
+
+            <div class="status-item">
+                <span class="status-label">LANGUAGE</span>
+                <strong id="language">Detecting...</strong>
+            </div>
+
+            <div class="status-item">
+                <span class="status-label">AI</span>
+                <strong id="topAiStatus">STANDBY</strong>
+            </div>
+
+            <div class="status-item">
+                <span class="status-label">AMBULANCE</span>
+                <strong id="topAmbulanceStatus">WAITING</strong>
+            </div>
+
+            <div class="status-item">
+                <span class="status-label">PRIORITY</span>
+                <strong id="topPriorityStatus">ANALYZING</strong>
+            </div>
+
+        </section>
+
+
+        <!-- ==============================
+             MAIN GRID
+        =============================== -->
+
+        <section class="dashboard-grid">
+
+
+            <!-- ==============================
+                 LEFT: LIVE AI CONVERSATION
+            =============================== -->
+
+            <section class="panel conversation-panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <span class="section-kicker">LIVE AUDIO INTELLIGENCE</span>
+                        <h2>AI Emergency Conversation</h2>
+                    </div>
+
+                    <div class="listening-badge">
+                        <span class="pulse-dot"></span>
+                        <span id="aiStatus">AI STANDBY</span>
+                    </div>
+
+                </div>
+
+
+                <div class="voice-visualizer">
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </div>
+
+
+                <div class="conversation-meta">
+
+                    <div>
+                        <span>Language</span>
+                        <strong id="conversationLanguage">
+                            Detecting...
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Current Question</span>
+                        <strong id="aiQuestion">
+                            Waiting for emergency information...
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <div class="transcript" id="transcript">
+
+                    <div class="empty-transcript">
+                        Waiting for emergency conversation...
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==============================
+                 RIGHT: AI TRIAGE
+            =============================== -->
+
+            <section class="panel triage-panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <span class="section-kicker">AI DECISION ENGINE</span>
+                        <h2>Emergency Triage</h2>
+                    </div>
+
+                    <span class="ai-badge">AI POWERED</span>
+
+                </div>
+
+
+                <div class="priority-display">
+
+                    <div class="priority-ring" id="priorityRing">
+                        <div>
+                            <span>LEVEL</span>
+                            <strong id="priorityStatus">ANALYZING</strong>
+                        </div>
+                    </div>
+
+                    <div class="priority-copy">
+
+                        <span>AI ASSESSMENT</span>
+
+                        <p id="priorityMessage">
+                            AI is assessing the emergency.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="assessment-grid">
+
+                    <div class="assessment-item">
+                        <span>Emergency Type</span>
+                        <strong id="whatHappened">—</strong>
+                    </div>
+
+                    <div class="assessment-item">
+                        <span>Patients</span>
+                        <strong id="patients">—</strong>
+                    </div>
+
+                    <div class="assessment-item">
+                        <span>Conscious</span>
+                        <strong id="conscious">—</strong>
+                    </div>
+
+                    <div class="assessment-item">
+                        <span>Breathing</span>
+                        <strong id="breathing">—</strong>
+                    </div>
+
+                    <div class="assessment-item">
+                        <span>Severe Bleeding</span>
+                        <strong id="bleeding">—</strong>
+                    </div>
+
+                    <div class="assessment-item">
+                        <span>Location</span>
+                        <strong id="triageLocation">—</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="decision-box">
+
+                    <span>WHY AI FLAGGED THIS</span>
+
+                    <p id="aiDecision">
+                        AI is waiting for emergency information.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==============================
+                 AMBULANCE DISPATCH
+            =============================== -->
+
+            <section class="panel ambulance-panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <span class="section-kicker">RESPONSE OPERATIONS</span>
+                        <h2>Ambulance Dispatch</h2>
+                    </div>
+
+                    <span class="dispatch-state" id="ambulanceStatus">
+                        WAITING
+                    </span>
+
+                </div>
+
+
+                <div class="ambulance-main">
+
+                    <div class="ambulance-visual">
+                        🚑
+                    </div>
+
+                    <div class="ambulance-info">
+
+                        <h3 id="ambulanceId">AMBULANCE —</h3>
+
+                        <p id="ambulanceMessage">
+                            Waiting for emergency confirmation
+                        </p>
+
+                        <div class="ambulance-stats">
+
+                            <div>
+                                <span>ETA</span>
+                                <strong id="ambulanceEta">—</strong>
+                            </div>
+
+                            <div>
+                                <span>Distance</span>
+                                <strong id="ambulanceDistance">—</strong>
+                            </div>
+
+                            <div>
+                                <span>Dispatch</span>
+                                <strong id="dispatchTime">—</strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="dispatch-progress">
+
+                    <div class="progress-step active">
+                        <span>1</span>
+                        <small>CALL</small>
+                    </div>
+
+                    <div class="progress-line"></div>
+
+                    <div class="progress-step active">
+                        <span>2</span>
+                        <small>LOCATION</small>
+                    </div>
+
+                    <div class="progress-line"></div>
+
+                    <div class="progress-step active">
+                        <span>3</span>
+                        <small>DISPATCH</small>
+                    </div>
+
+                    <div class="progress-line"></div>
+
+                    <div class="progress-step">
+                        <span>4</span>
+                        <small>ARRIVAL</small>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==============================
+                 PATIENT LOCATION
+            =============================== -->
+
+            <section class="panel location-panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <span class="section-kicker">GEOLOCATION</span>
+                        <h2>Patient Location</h2>
+                    </div>
+
+                    <span class="location-live">
+                        ● LIVE
+                    </span>
+
+                </div>
+
+
+                <div class="map">
+
+                    <div class="map-grid"></div>
+
+                    <div class="map-route"></div>
+
+                    <div class="map-pin">
+                        <div class="pin-pulse"></div>
+                        📍
+                    </div>
+
+                    <div class="map-label">
+                        <strong id="locationStatus">
+                            Waiting for location...
+                        </strong>
+
+                        <span>
+                            Emergency location
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <div class="location-footer">
+
+                    <div>
+                        <span>Location Status</span>
+                        <strong id="locationDetected">
+                            WAITING
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Accuracy</span>
+                        <strong id="locationAccuracy">
+                            —
+                        </strong>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==============================
+                 HOSPITAL
+            =============================== -->
+
+            <section class="panel hospital-panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <span class="section-kicker">MEDICAL COORDINATION</span>
+                        <h2>Hospital Response</h2>
+                    </div>
+
+                    <span class="hospital-status" id="hospitalStatus">
+                        PENDING
+                    </span>
+
+                </div>
+
+
+                <div class="hospital-main">
+
+                    <div class="hospital-icon">
+                        🏥
+                    </div>
+
+                    <div>
+
+                        <h3 id="hospitalName">
+                            Hospital recommendation pending
+                        </h3>
+
+                        <p id="hospitalReason">
+                            AI will recommend an appropriate emergency facility.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="hospital-stats">
+
+                    <div>
+                        <span>Distance</span>
+                        <strong id="hospitalDistance">—</strong>
+                    </div>
+
+                    <div>
+                        <span>Emergency Capacity</span>
+                        <strong id="hospitalCapacity">—</strong>
+                    </div>
+
+                    <div>
+                        <span>Alert</span>
+                        <strong id="hospitalAlert">NOT SENT</strong>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==============================
+                 DISPATCH TIMELINE
+            =============================== -->
+
+            <section class="panel timeline-panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <span class="section-kicker">INCIDENT MONITORING</span>
+                        <h2>Live Response Timeline</h2>
+                    </div>
+
+                    <span class="timeline-live">
+                        LIVE
+                    </span>
+
+                </div>
+
+
+                <div class="timeline" id="dispatchTimeline">
+
+                    <div class="timeline-empty">
+                        Waiting for incident activity...
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==============================
+                 INCIDENT DETAILS
+            =============================== -->
+
+            <section class="panel incident-panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <span class="section-kicker">INCIDENT RECORD</span>
+                        <h2>Emergency Details</h2>
+                    </div>
+
+                </div>
+
+
+                <div class="incident-details">
+
+                    <div>
+                        <span>Emergency ID</span>
+                        <strong id="emergencyId">—</strong>
+                    </div>
+
+                    <div>
+                        <span>Call Started</span>
+                        <strong id="callStartedAt">—</strong>
+                    </div>
+
+                    <div>
+                        <span>Language</span>
+                        <strong id="languageDetails">—</strong>
+                    </div>
+
+                    <div>
+                        <span>Current Status</span>
+                        <strong id="callMessage">
+                            Waiting for emergency call...
+                        </strong>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+
+    <script src="js/dashboard.js"></script>
+
+</body>
+
+</html>
+
