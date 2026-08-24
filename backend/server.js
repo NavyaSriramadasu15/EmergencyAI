@@ -1,9 +1,141 @@
 const express = require("express");
 const cors = require("cors");
+const http = require("http");
+const WebSocket = require("ws");
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const server = http.createServer(app);
+
+// ==================================================
+// EXOTEL WEBSOCKET / AGENTSTREAM
+// ==================================================
+
+const wss = new WebSocket.Server({
+    server,
+    path: "/media"
+});
+
+wss.on("connection", (ws) => {
+
+    console.log("🔌 Exotel WebSocket connected");
+
+    ws.on("message", (rawMessage) => {
+
+        try {
+
+            const data =
+                JSON.parse(rawMessage.toString());
+
+            console.log(
+                "📡 WebSocket event:",
+                JSON.stringify(data, null, 2)
+            );
+
+            const event =
+                String(
+                    data.event ||
+                    data.type ||
+                    ""
+                ).toLowerCase();
+
+            // ------------------------------------------
+            // INCOMING CALL
+            // ------------------------------------------
+
+            if (
+                event === "connected" ||
+                event === "start" ||
+                event === "call_started"
+            ) {
+
+                emergencyData =
+                    createEmergency();
+
+                emergencyData.status =
+                    "CALL_CONNECTED";
+
+                emergencyData.aiStatus =
+                    "LISTENING";
+
+                emergencyData.callStartedAt =
+                    new Date().toISOString();
+
+                emergencyData.dispatchTimeline.push({
+                    time:
+                        new Date()
+                            .toLocaleTimeString(),
+
+                    event:
+                        "Incoming emergency call received"
+                });
+
+                console.log(
+                    "🚨 INCOMING EMERGENCY CALL"
+                );
+            }
+
+            // ------------------------------------------
+            // CALL ENDED
+            // ------------------------------------------
+
+            if (
+                event === "stop" ||
+                event === "disconnected" ||
+                event === "call_ended"
+            ) {
+
+                emergencyData.status =
+                    "CALL_COMPLETED";
+
+                emergencyData.aiStatus =
+                    "COMPLETED";
+
+                emergencyData.dispatchTimeline.push({
+                    time:
+                        new Date()
+                            .toLocaleTimeString(),
+
+                    event:
+                        "Emergency AI call completed"
+                });
+
+                console.log(
+                    "✅ Emergency call completed"
+                );
+            }
+
+        } catch (error) {
+
+            console.error(
+                "❌ WebSocket message error:",
+                error.message
+            );
+
+        }
+
+    });
+
+    ws.on("close", () => {
+
+        console.log(
+            "🔌 Exotel WebSocket disconnected"
+        );
+
+    });
+
+    ws.on("error", (error) => {
+
+        console.error(
+            "❌ WebSocket error:",
+            error.message
+        );
+
+    });
+
+});
 
 app.use(cors());
 app.use(express.json());
@@ -14,229 +146,388 @@ app.use(express.json());
 // ==================================================
 
 function createEmergency() {
+
     return {
-        emergencyId: "EMG-" + Date.now(),
 
-        status: "WAITING_FOR_CALL",
+        emergencyId:
+            "EMG-" + Date.now(),
 
-        callerNumber: "",
+        status:
+            "WAITING_FOR_CALL",
 
-        language: "Detecting...",
+        callerNumber:
+            "",
 
-        aiStatus: "AI STANDBY",
+        language:
+            "Detecting...",
 
-        location: "Waiting for location...",
+        aiStatus:
+            "AI STANDBY",
 
-        ambulance: "WAITING",
+        location:
+            "Waiting for location...",
 
-        priority: "ANALYZING",
+        ambulance:
+            "WAITING",
 
-        question: "Waiting for emergency information...",
+        priority:
+            "ANALYZING",
+
+        question:
+            "Waiting for emergency information...",
 
         answers: {
-            whatHappened: "",
-            patients: "",
-            conscious: "",
-            breathing: "",
-            bleeding: ""
+
+            whatHappened:
+                "",
+
+            patients:
+                "",
+
+            conscious:
+                "",
+
+            breathing:
+                "",
+
+            bleeding:
+                ""
         },
 
-        transcript: [],
+        transcript:
+            [],
 
-        dispatchTimeline: [],
+        dispatchTimeline:
+            [],
 
         ambulanceDetails: {
-            id: "AMB-" + Math.floor(100 + Math.random() * 900),
-            eta: "08 min",
-            distance: "2.4 km"
+
+            id:
+                "AMB-" +
+                Math.floor(
+                    100 +
+                    Math.random() * 900
+                ),
+
+            eta:
+                "08 min",
+
+            distance:
+                "2.4 km"
         },
 
-        aiDecision: "AI is assessing the situation",
+        aiDecision:
+            "AI is assessing the situation",
 
-        callStartedAt: null,
+        callStartedAt:
+            null,
 
-        aiIntent: "",
+        aiIntent:
+            "",
 
-        outcome: ""
+        outcome:
+            ""
     };
 }
 
 
-let emergencyData = createEmergency();
+let emergencyData =
+    createEmergency();
 
 
 // ==================================================
 // GET CURRENT EMERGENCY DATA
 // ==================================================
 
-app.get("/api/emergency", (req, res) => {
+app.get(
+    "/api/emergency",
+    (req, res) => {
 
-    res.json(emergencyData);
+        res.json(
+            emergencyData
+        );
 
-});
+    }
+);
 
 
 // ==================================================
 // UPDATE EMERGENCY DATA
 // ==================================================
 
-app.post("/api/emergency/update", (req, res) => {
+app.post(
+    "/api/emergency/update",
+    (req, res) => {
 
-    emergencyData = {
-        ...emergencyData,
-        ...req.body
-    };
+        emergencyData = {
 
-    console.log("🚑 Emergency data updated");
+            ...emergencyData,
 
-    res.json({
-        success: true,
-        data: emergencyData
-    });
+            ...req.body
 
-});
+        };
+
+        console.log(
+            "🚑 Emergency data updated"
+        );
+
+        res.json({
+
+            success:
+                true,
+
+            data:
+                emergencyData
+
+        });
+
+    }
+);
 
 
 // ==================================================
 // START EMERGENCY CALL
 // ==================================================
 
-app.post("/api/emergency/start", (req, res) => {
+app.post(
+    "/api/emergency/start",
+    (req, res) => {
 
-    emergencyData = createEmergency();
+        emergencyData =
+            createEmergency();
 
-    emergencyData.status = "CALL_CONNECTED";
-    emergencyData.aiStatus = "LISTENING";
-    emergencyData.callStartedAt = new Date().toISOString();
+        emergencyData.status =
+            "CALL_CONNECTED";
 
-    emergencyData.dispatchTimeline.push({
-        time: new Date().toLocaleTimeString(),
-        event: "Emergency call received"
-    });
+        emergencyData.aiStatus =
+            "LISTENING";
 
-    console.log("📞 Emergency call started");
+        emergencyData.callStartedAt =
+            new Date().toISOString();
 
-    res.json({
-        success: true,
-        message: "Emergency call started",
-        data: emergencyData
-    });
+        emergencyData.dispatchTimeline.push({
 
-});
+            time:
+                new Date()
+                    .toLocaleTimeString(),
+
+            event:
+                "Emergency call received"
+
+        });
+
+        console.log(
+            "📞 Emergency call started"
+        );
+
+        res.json({
+
+            success:
+                true,
+
+            message:
+                "Emergency call started",
+
+            data:
+                emergencyData
+
+        });
+
+    }
+);
 
 
 // ==================================================
 // LANGUAGE DETECTED
 // ==================================================
 
-app.post("/api/emergency/language", (req, res) => {
+app.post(
+    "/api/emergency/language",
+    (req, res) => {
 
-    const { language } = req.body;
+        const {
+            language
+        } = req.body;
 
-    if (language) {
+        if (language) {
 
-        emergencyData.language = language;
+            emergencyData.language =
+                language;
 
-        emergencyData.dispatchTimeline.push({
-            time: new Date().toLocaleTimeString(),
-            event: `Language detected: ${language}`
+            emergencyData.dispatchTimeline.push({
+
+                time:
+                    new Date()
+                        .toLocaleTimeString(),
+
+                event:
+                    `Language detected: ${language}`
+
+            });
+
+        }
+
+        console.log(
+            "🌐 Language:",
+            emergencyData.language
+        );
+
+        res.json({
+
+            success:
+                true,
+
+            data:
+                emergencyData
+
         });
 
     }
-
-    console.log("🌐 Language:", emergencyData.language);
-
-    res.json({
-        success: true,
-        data: emergencyData
-    });
-
-});
+);
 
 
 // ==================================================
 // AI QUESTION
 // ==================================================
 
-app.post("/api/emergency/question", (req, res) => {
+app.post(
+    "/api/emergency/question",
+    (req, res) => {
 
-    const { question } = req.body;
+        const {
+            question
+        } = req.body;
 
-    emergencyData.aiStatus = "ASKING_QUESTIONS";
+        emergencyData.aiStatus =
+            "ASKING_QUESTIONS";
 
-    emergencyData.question =
-        question || "Please provide emergency information.";
+        emergencyData.question =
+            question ||
+            "Please provide emergency information.";
 
-    emergencyData.dispatchTimeline.push({
-        time: new Date().toLocaleTimeString(),
-        event: "AI asked emergency question"
-    });
+        emergencyData.dispatchTimeline.push({
 
-    console.log("🤖 AI Question:", emergencyData.question);
+            time:
+                new Date()
+                    .toLocaleTimeString(),
 
-    res.json({
-        success: true,
-        data: emergencyData
-    });
+            event:
+                "AI asked emergency question"
 
-});
+        });
+
+        console.log(
+            "🤖 AI Question:",
+            emergencyData.question
+        );
+
+        res.json({
+
+            success:
+                true,
+
+            data:
+                emergencyData
+
+        });
+
+    }
+);
 
 
 // ==================================================
 // AI TRANSCRIPT
 // ==================================================
 
-app.post("/api/emergency/transcript", (req, res) => {
+app.post(
+    "/api/emergency/transcript",
+    (req, res) => {
 
-    const { speaker, message } = req.body;
-
-    if (speaker && message) {
-
-        emergencyData.transcript.push({
+        const {
             speaker,
-            message,
-            time: new Date().toLocaleTimeString()
+            message
+        } = req.body;
+
+        if (
+            speaker &&
+            message
+        ) {
+
+            emergencyData.transcript.push({
+
+                speaker,
+
+                message,
+
+                time:
+                    new Date()
+                        .toLocaleTimeString()
+
+            });
+
+        }
+
+        res.json({
+
+            success:
+                true,
+
+            data:
+                emergencyData
+
         });
 
     }
-
-    res.json({
-        success: true,
-        data: emergencyData
-    });
-
-});
+);
 
 
 // ==================================================
 // PATIENT ANSWERS
 // ==================================================
 
-app.post("/api/emergency/answers", (req, res) => {
+app.post(
+    "/api/emergency/answers",
+    (req, res) => {
 
-    emergencyData.answers = {
-        ...emergencyData.answers,
-        ...req.body
-    };
+        emergencyData.answers = {
 
-    emergencyData.aiStatus = "ANALYZING";
+            ...emergencyData.answers,
 
-    emergencyData.dispatchTimeline.push({
-        time: new Date().toLocaleTimeString(),
-        event: "Emergency information collected"
-    });
+            ...req.body
 
-    console.log(
-        "🧠 Emergency information:",
-        emergencyData.answers
-    );
+        };
 
-    res.json({
-        success: true,
-        data: emergencyData
-    });
+        emergencyData.aiStatus =
+            "ANALYZING";
 
-});
+        emergencyData.dispatchTimeline.push({
+
+            time:
+                new Date()
+                    .toLocaleTimeString(),
+
+            event:
+                "Emergency information collected"
+
+        });
+
+        console.log(
+            "🧠 Emergency information:",
+            emergencyData.answers
+        );
+
+        res.json({
+
+            success:
+                true,
+
+            data:
+                emergencyData
+
+        });
+
+    }
+);
 
 
 // ==================================================
@@ -245,650 +536,1025 @@ app.post("/api/emergency/answers", (req, res) => {
 // LOCATION CAN TRIGGER IMMEDIATE DISPATCH
 // ==================================================
 
-app.post("/api/emergency/location", (req, res) => {
+app.post(
+    "/api/emergency/location",
+    (req, res) => {
 
-    const { location } = req.body;
+        const {
+            location
+        } = req.body;
 
-    emergencyData.location =
-        location || "Location Detected";
+        emergencyData.location =
+            location ||
+            "Location Detected";
 
-    emergencyData.dispatchTimeline.push({
-        time: new Date().toLocaleTimeString(),
-        event: "Patient location received"
-    });
+        emergencyData.dispatchTimeline.push({
 
-    // Immediate ambulance dispatch
-    emergencyData.ambulance = "DISPATCHED";
+            time:
+                new Date()
+                    .toLocaleTimeString(),
 
-    emergencyData.dispatchTimeline.push({
-        time: new Date().toLocaleTimeString(),
-        event: "Ambulance dispatch initiated"
-    });
+            event:
+                "Patient location received"
 
-    console.log(
-        "📍 Location:",
-        emergencyData.location
-    );
+        });
 
-    console.log("🚑 Ambulance dispatched");
+        // Immediate ambulance dispatch
 
-    res.json({
-        success: true,
-        message:
-            "Location received and ambulance dispatch initiated",
-        data: emergencyData
-    });
+        emergencyData.ambulance =
+            "DISPATCHED";
 
-});
+        emergencyData.dispatchTimeline.push({
+
+            time:
+                new Date()
+                    .toLocaleTimeString(),
+
+            event:
+                "Ambulance dispatch initiated"
+
+        });
+
+        console.log(
+            "📍 Location:",
+            emergencyData.location
+        );
+
+        console.log(
+            "🚑 Ambulance dispatched"
+        );
+
+        res.json({
+
+            success:
+                true,
+
+            message:
+                "Location received and ambulance dispatch initiated",
+
+            data:
+                emergencyData
+
+        });
+
+    }
+);
 
 
 // ==================================================
 // EMERGENCY PRIORITY
 // ==================================================
 
-app.post("/api/emergency/priority", (req, res) => {
+app.post(
+    "/api/emergency/priority",
+    (req, res) => {
 
-    const { priority } = req.body;
+        const {
+            priority
+        } = req.body;
 
-    if (priority) {
+        if (priority) {
 
-        emergencyData.priority = priority;
+            emergencyData.priority =
+                priority;
 
-        if (priority === "CRITICAL") {
+            if (
+                priority === "CRITICAL"
+            ) {
 
-            emergencyData.aiDecision =
-                "Severe emergency indicators detected. Immediate ambulance response recommended.";
+                emergencyData.aiDecision =
+                    "Severe emergency indicators detected. Immediate ambulance response recommended.";
 
-        } else if (priority === "HIGH") {
+            }
 
-            emergencyData.aiDecision =
-                "Urgent medical attention required.";
+            else if (
+                priority === "HIGH"
+            ) {
 
-        } else {
+                emergencyData.aiDecision =
+                    "Urgent medical attention required.";
 
-            emergencyData.aiDecision =
-                "Emergency assessed and response initiated.";
+            }
+
+            else {
+
+                emergencyData.aiDecision =
+                    "Emergency assessed and response initiated.";
+
+            }
+
+            emergencyData.dispatchTimeline.push({
+
+                time:
+                    new Date()
+                        .toLocaleTimeString(),
+
+                event:
+                    `Emergency classified as ${priority}`
+
+            });
 
         }
 
-        emergencyData.dispatchTimeline.push({
-            time: new Date().toLocaleTimeString(),
-            event: `Emergency classified as ${priority}`
+        console.log(
+            "🚨 Priority:",
+            emergencyData.priority
+        );
+
+        res.json({
+
+            success:
+                true,
+
+            data:
+                emergencyData
+
         });
 
     }
-
-    console.log(
-        "🚨 Priority:",
-        emergencyData.priority
-    );
-
-    res.json({
-        success: true,
-        data: emergencyData
-    });
-
-});
+);
 
 
 // ==================================================
 // AMBULANCE STATUS
 // ==================================================
 
-app.post("/api/emergency/ambulance", (req, res) => {
+app.post(
+    "/api/emergency/ambulance",
+    (req, res) => {
 
-    const {
-        status,
-        eta,
-        distance
-    } = req.body;
+        const {
 
-    if (status) {
-        emergencyData.ambulance = status;
+            status,
+
+            eta,
+
+            distance
+
+        } = req.body;
+
+        if (status) {
+
+            emergencyData.ambulance =
+                status;
+
+        }
+
+        if (eta) {
+
+            emergencyData.ambulanceDetails.eta =
+                eta;
+
+        }
+
+        if (distance) {
+
+            emergencyData.ambulanceDetails.distance =
+                distance;
+
+        }
+
+        emergencyData.dispatchTimeline.push({
+
+            time:
+                new Date()
+                    .toLocaleTimeString(),
+
+            event:
+                `Ambulance status: ${emergencyData.ambulance}`
+
+        });
+
+        res.json({
+
+            success:
+                true,
+
+            data:
+                emergencyData
+
+        });
+
     }
-
-    if (eta) {
-        emergencyData.ambulanceDetails.eta = eta;
-    }
-
-    if (distance) {
-        emergencyData.ambulanceDetails.distance = distance;
-    }
-
-    emergencyData.dispatchTimeline.push({
-        time: new Date().toLocaleTimeString(),
-        event:
-            `Ambulance status: ${emergencyData.ambulance}`
-    });
-
-    res.json({
-        success: true,
-        data: emergencyData
-    });
-
-});
+);
 
 
 // ==================================================
 // EXOTEL VOICEBOT WEBHOOK
 // ==================================================
 
-app.post("/api/exotel/webhook", (req, res) => {
+app.post(
+    "/api/exotel/webhook",
+    (req, res) => {
 
-    try {
+        try {
 
-        console.log("");
-        console.log("========================================");
-        console.log("📞 EXOTEL WEBHOOK RECEIVED");
-        console.log("========================================");
-
-        console.log(
-            JSON.stringify(req.body, null, 2)
-        );
-
-        const data = req.body || {};
-
-        // ------------------------------------------
-        // CALLER NUMBER
-        // ------------------------------------------
-
-        const callerNumber =
-            data["contact uri"] ||
-            data.contact_uri ||
-            data["customer number"] ||
-            data.customer_number ||
-            data.from ||
-            data.From ||
-            "";
-
-        if (callerNumber) {
-            emergencyData.callerNumber = callerNumber;
-        }
-
-
-        // ------------------------------------------
-        // SESSION START
-        // ------------------------------------------
-
-        const sessionState =
-            data["session state"] ||
-            data.session_state ||
-            data.sessionState ||
-            "";
-
-        if (
-            sessionState === "session start" ||
-            sessionState === "start" ||
-            sessionState === "SESSION_START"
-        ) {
-
-            emergencyData = createEmergency();
-
-            emergencyData.status = "CALL_CONNECTED";
-            emergencyData.aiStatus = "LISTENING";
-            emergencyData.callStartedAt =
-                new Date().toISOString();
-
-            if (callerNumber) {
-                emergencyData.callerNumber =
-                    callerNumber;
-            }
-
-            emergencyData.dispatchTimeline.push({
-                time: new Date().toLocaleTimeString(),
-                event:
-                    "Emergency call received from Exotel"
-            });
+            console.log("");
 
             console.log(
-                "🚨 New emergency call started"
+                "========================================"
             );
-        }
+
+            console.log(
+                "📞 EXOTEL WEBHOOK RECEIVED"
+            );
+
+            console.log(
+                "========================================"
+            );
+
+            console.log(
+                JSON.stringify(
+                    req.body,
+                    null,
+                    2
+                )
+            );
+
+            const data =
+                req.body || {};
 
 
-        // ------------------------------------------
-        // TRANSCRIPT
-        // ------------------------------------------
+            // ------------------------------------------
+            // CALLER NUMBER
+            // ------------------------------------------
 
-        const events =
-            Array.isArray(data.events)
-                ? data.events
-                : [];
+            const callerNumber =
 
-        events.forEach((event) => {
+                data["contact uri"] ||
 
-            const eventType =
-                event["event type"] ||
-                event.event_type ||
-                event.type ||
+                data.contact_uri ||
+
+                data["customer number"] ||
+
+                data.customer_number ||
+
+                data.from ||
+
+                data.From ||
+
                 "";
 
-            const eventData =
-                event["event data"] ||
-                event.event_data ||
-                event.data ||
-                {};
 
-            // --------------------------------------
-            // TRANSCRIPT EVENT
-            // --------------------------------------
+            if (callerNumber) {
+
+                emergencyData.callerNumber =
+                    callerNumber;
+
+            }
+
+
+            // ------------------------------------------
+            // SESSION START
+            // ------------------------------------------
+
+            const sessionState =
+
+                data["session state"] ||
+
+                data.session_state ||
+
+                data.sessionState ||
+
+                "";
+
 
             if (
-                eventType === "transcript" ||
-                eventType === "TRANSCRIPT"
+
+                sessionState ===
+                    "session start" ||
+
+                sessionState ===
+                    "start" ||
+
+                sessionState ===
+                    "SESSION_START"
+
             ) {
 
-                let transcripts =
-                    eventData.transcripts;
+                emergencyData =
+                    createEmergency();
 
-                if (!Array.isArray(transcripts)) {
-                    transcripts = [];
+                emergencyData.status =
+                    "CALL_CONNECTED";
+
+                emergencyData.aiStatus =
+                    "LISTENING";
+
+                emergencyData.callStartedAt =
+                    new Date().toISOString();
+
+
+                if (callerNumber) {
+
+                    emergencyData.callerNumber =
+                        callerNumber;
+
                 }
 
-                transcripts.forEach((transcript) => {
 
-                    let segments =
-                        transcript[
-                            "transcript segments"
-                        ];
+                emergencyData.dispatchTimeline.push({
 
-                    if (!Array.isArray(segments)) {
-                        segments =
-                            transcript.transcript_segments;
-                    }
+                    time:
+                        new Date()
+                            .toLocaleTimeString(),
 
-                    if (!Array.isArray(segments)) {
-                        segments = [];
-                    }
-
-                    segments.forEach((segment) => {
-
-                        const speaker =
-                            segment.speaker ||
-                            segment["speaker"] ||
-                            "";
-
-                        const message =
-                            segment.text ||
-                            segment.transcript ||
-                            segment.message ||
-                            "";
-
-                        if (!message) {
-                            return;
-                        }
-
-                        let dashboardSpeaker =
-                            "AI";
-
-                        if (
-                            speaker === "user" ||
-                            speaker === "caller" ||
-                            speaker === "customer"
-                        ) {
-                            dashboardSpeaker =
-                                "CALLER";
-                        }
-
-                        emergencyData.transcript.push({
-                            speaker:
-                                dashboardSpeaker,
-                            message:
-                                message,
-                            time:
-                                new Date()
-                                    .toLocaleTimeString()
-                        });
-
-                        console.log(
-                            `${dashboardSpeaker}: ${message}`
-                        );
-
-                    });
+                    event:
+                        "Emergency call received from Exotel"
 
                 });
 
-            }
 
-
-            // --------------------------------------
-            // SUMMARY
-            // --------------------------------------
-
-            if (
-                eventType === "summary" ||
-                eventType === "SUMMARY"
-            ) {
-
-                emergencyData.aiDecision =
-                    eventData.summary ||
-                    eventData.text ||
-                    "AI assessment received";
+                console.log(
+                    "🚨 New emergency call started"
+                );
 
             }
 
 
-            // --------------------------------------
-            // INTENT
-            // --------------------------------------
+            // ------------------------------------------
+            // TRANSCRIPT
+            // ------------------------------------------
 
-            if (
-                eventType === "intent" ||
-                eventType === "INTENT"
-            ) {
+            const events =
 
-                emergencyData.aiIntent =
-                    eventData.intent ||
-                    eventData.name ||
-                    "Emergency";
+                Array.isArray(
+                    data.events
+                )
 
-            }
+                    ? data.events
+
+                    : [];
 
 
-            // --------------------------------------
-            // OUTCOME
-            // --------------------------------------
+            events.forEach(
+                (event) => {
 
-            if (
-                eventType === "outcome" ||
-                eventType === "OUTCOME"
-            ) {
+                    const eventType =
 
-                emergencyData.outcome =
-                    eventData.outcome ||
-                    eventData.name ||
-                    "Emergency call completed";
+                        event["event type"] ||
 
-            }
+                        event.event_type ||
 
-        });
+                        event.type ||
+
+                        "";
 
 
-        // ------------------------------------------
-        // SESSION END
-        // ------------------------------------------
+                    const eventData =
 
-        if (
-            sessionState === "session end" ||
-            sessionState === "end" ||
-            sessionState === "SESSION_END"
-        ) {
+                        event["event data"] ||
 
-            emergencyData.status =
-                "CALL_COMPLETED";
+                        event.event_data ||
 
-            emergencyData.aiStatus =
-                "COMPLETED";
+                        event.data ||
 
-            emergencyData.dispatchTimeline.push({
-                time: new Date().toLocaleTimeString(),
-                event:
-                    "Emergency AI call completed"
-            });
+                        {};
 
-            console.log(
-                "✅ Emergency call completed"
+
+                    // --------------------------------------
+                    // TRANSCRIPT EVENT
+                    // --------------------------------------
+
+                    if (
+
+                        eventType ===
+                            "transcript" ||
+
+                        eventType ===
+                            "TRANSCRIPT"
+
+                    ) {
+
+                        let transcripts =
+                            eventData.transcripts;
+
+
+                        if (
+                            !Array.isArray(
+                                transcripts
+                            )
+                        ) {
+
+                            transcripts =
+                                [];
+
+                        }
+
+
+                        transcripts.forEach(
+                            (transcript) => {
+
+                                let segments =
+
+                                    transcript[
+                                        "transcript segments"
+                                    ];
+
+
+                                if (
+                                    !Array.isArray(
+                                        segments
+                                    )
+                                ) {
+
+                                    segments =
+                                        transcript.transcript_segments;
+
+                                }
+
+
+                                if (
+                                    !Array.isArray(
+                                        segments
+                                    )
+                                ) {
+
+                                    segments =
+                                        [];
+
+                                }
+
+
+                                segments.forEach(
+                                    (segment) => {
+
+                                        const speaker =
+
+                                            segment.speaker ||
+
+                                            segment["speaker"] ||
+
+                                            "";
+
+
+                                        const message =
+
+                                            segment.text ||
+
+                                            segment.transcript ||
+
+                                            segment.message ||
+
+                                            "";
+
+
+                                        if (!message) {
+
+                                            return;
+
+                                        }
+
+
+                                        let dashboardSpeaker =
+                                            "AI";
+
+
+                                        if (
+
+                                            speaker ===
+                                                "user" ||
+
+                                            speaker ===
+                                                "caller" ||
+
+                                            speaker ===
+                                                "customer"
+
+                                        ) {
+
+                                            dashboardSpeaker =
+                                                "CALLER";
+
+                                        }
+
+
+                                        emergencyData.transcript.push({
+
+                                            speaker:
+                                                dashboardSpeaker,
+
+                                            message:
+                                                message,
+
+                                            time:
+                                                new Date()
+                                                    .toLocaleTimeString()
+
+                                        });
+
+
+                                        console.log(
+
+                                            `${dashboardSpeaker}: ${message}`
+
+                                        );
+
+                                    }
+                                );
+
+                            }
+                        );
+
+                    }
+
+
+                    // --------------------------------------
+                    // SUMMARY
+                    // --------------------------------------
+
+                    if (
+
+                        eventType ===
+                            "summary" ||
+
+                        eventType ===
+                            "SUMMARY"
+
+                    ) {
+
+                        emergencyData.aiDecision =
+
+                            eventData.summary ||
+
+                            eventData.text ||
+
+                            "AI assessment received";
+
+                    }
+
+
+                    // --------------------------------------
+                    // INTENT
+                    // --------------------------------------
+
+                    if (
+
+                        eventType ===
+                            "intent" ||
+
+                        eventType ===
+                            "INTENT"
+
+                    ) {
+
+                        emergencyData.aiIntent =
+
+                            eventData.intent ||
+
+                            eventData.name ||
+
+                            "Emergency";
+
+                    }
+
+
+                    // --------------------------------------
+                    // OUTCOME
+                    // --------------------------------------
+
+                    if (
+
+                        eventType ===
+                            "outcome" ||
+
+                        eventType ===
+                            "OUTCOME"
+
+                    ) {
+
+                        emergencyData.outcome =
+
+                            eventData.outcome ||
+
+                            eventData.name ||
+
+                            "Emergency call completed";
+
+                    }
+
+                }
             );
+
+
+            // ------------------------------------------
+            // SESSION END
+            // ------------------------------------------
+
+            if (
+
+                sessionState ===
+                    "session end" ||
+
+                sessionState ===
+                    "end" ||
+
+                sessionState ===
+                    "SESSION_END"
+
+            ) {
+
+                emergencyData.status =
+                    "CALL_COMPLETED";
+
+                emergencyData.aiStatus =
+                    "COMPLETED";
+
+                emergencyData.dispatchTimeline.push({
+
+                    time:
+                        new Date()
+                            .toLocaleTimeString(),
+
+                    event:
+                        "Emergency AI call completed"
+
+                });
+
+                console.log(
+                    "✅ Emergency call completed"
+                );
+
+            }
+
+
+            // ------------------------------------------
+            // ALWAYS RETURN SUCCESS
+            // ------------------------------------------
+
+            res.status(200).json({
+
+                success:
+                    true,
+
+                received:
+                    true
+
+            });
 
         }
 
+        catch (error) {
 
-        // ------------------------------------------
-        // ALWAYS RETURN SUCCESS
-        // ------------------------------------------
+            console.error(
+                "❌ Exotel webhook error:",
+                error
+            );
 
-        res.status(200).json({
-            success: true,
-            received: true
-        });
+            res.status(500).json({
 
-    } catch (error) {
+                success:
+                    false,
 
-        console.error(
-            "❌ Exotel webhook error:",
-            error
+                error:
+                    error.message
+
+            });
+
+        }
+
+    }
+);
+// ==================================================
+// DEMO EMERGENCY
+// ==================================================
+
+app.post(
+    "/api/emergency/demo",
+    (req, res) => {
+
+        console.log(
+            "🚨 Emergency demo started"
         );
 
-        res.status(500).json({
-            success: false,
-            error: error.message
+        emergencyData =
+            createEmergency();
+
+        // ------------------------------------------
+        // CALL CONNECTED
+        // ------------------------------------------
+
+        emergencyData.status =
+            "CALL_CONNECTED";
+
+        emergencyData.aiStatus =
+            "LISTENING";
+
+        emergencyData.callStartedAt =
+            new Date().toISOString();
+
+        emergencyData.callerNumber =
+            "+91 XXXXX XXXXX";
+
+        emergencyData.dispatchTimeline.push({
+
+            time:
+                new Date()
+                    .toLocaleTimeString(),
+
+            event:
+                "Incoming emergency call received"
+
+        });
+
+
+        // ------------------------------------------
+        // LANGUAGE
+        // ------------------------------------------
+
+        emergencyData.language =
+            "English / Telugu";
+
+        emergencyData.dispatchTimeline.push({
+
+            time:
+                new Date()
+                    .toLocaleTimeString(),
+
+            event:
+                "Language detected"
+
+        });
+
+
+        // ------------------------------------------
+        // AI QUESTION
+        // ------------------------------------------
+
+        emergencyData.aiStatus =
+            "ASKING_QUESTIONS";
+
+        emergencyData.question =
+            "What happened? How many people are injured?";
+
+        emergencyData.transcript.push({
+
+            speaker:
+                "AI",
+
+            message:
+                "Please tell me what happened and how many people are injured.",
+
+            time:
+                new Date()
+                    .toLocaleTimeString()
+
+        });
+
+
+        // ------------------------------------------
+        // CALLER RESPONSE
+        // ------------------------------------------
+
+        emergencyData.answers = {
+
+            whatHappened:
+                "Road accident",
+
+            patients:
+                "2",
+
+            conscious:
+                "1 unconscious",
+
+            breathing:
+                "Yes",
+
+            bleeding:
+                "Severe bleeding"
+
+        };
+
+
+        emergencyData.transcript.push({
+
+            speaker:
+                "CALLER",
+
+            message:
+                "There was a road accident. Two people are injured. One person is unconscious and there is severe bleeding.",
+
+            time:
+                new Date()
+                    .toLocaleTimeString()
+
+        });
+
+
+        // ------------------------------------------
+        // LOCATION
+        // ------------------------------------------
+
+        emergencyData.location =
+            "Hyderabad, Telangana";
+
+        emergencyData.dispatchTimeline.push({
+
+            time:
+                new Date()
+                    .toLocaleTimeString(),
+
+            event:
+                "Patient location received"
+
+        });
+
+
+        // ------------------------------------------
+        // PRIORITY
+        // ------------------------------------------
+
+        emergencyData.priority =
+            "CRITICAL";
+
+        emergencyData.aiStatus =
+            "ANALYZING";
+
+        emergencyData.aiDecision =
+            "Severe emergency indicators detected. Immediate ambulance response required.";
+
+        emergencyData.dispatchTimeline.push({
+
+            time:
+                new Date()
+                    .toLocaleTimeString(),
+
+            event:
+                "Emergency classified as CRITICAL"
+
+        });
+
+
+        // ------------------------------------------
+        // AMBULANCE
+        // ------------------------------------------
+
+        emergencyData.ambulance =
+            "DISPATCHED";
+
+        emergencyData.dispatchTimeline.push({
+
+            time:
+                new Date()
+                    .toLocaleTimeString(),
+
+            event:
+                "Ambulance dispatch initiated"
+
+        });
+
+
+        emergencyData.ambulanceDetails = {
+
+            id:
+                "AMB-247",
+
+            eta:
+                "08 min",
+
+            distance:
+                "2.4 km"
+
+        };
+
+
+        // ------------------------------------------
+        // AI DECISION
+        // ------------------------------------------
+
+        emergencyData.aiStatus =
+            "ACTIVE";
+
+        emergencyData.question =
+            "Ambulance dispatched. Stay on the line and follow emergency instructions.";
+
+
+        emergencyData.dispatchTimeline.push({
+
+            time:
+                new Date()
+                    .toLocaleTimeString(),
+
+            event:
+                "AI emergency response activated"
+
+        });
+
+
+        res.status(200).json({
+
+            success:
+                true,
+
+            message:
+                "Demo emergency started",
+
+            data:
+                emergencyData
+
         });
 
     }
-
-});
-
-
-// ==================================================
-// DEMO SCENARIO
-// This is for your hackathon presentation.
-// ==================================================
-
-app.post("/api/emergency/demo", async (req, res) => {
-
-    emergencyData = createEmergency();
-
-    const wait = (ms) =>
-        new Promise(resolve =>
-            setTimeout(resolve, ms)
-        );
-
-
-    // STEP 1 — CALL
-
-    emergencyData.status =
-        "CALL_CONNECTED";
-
-    emergencyData.aiStatus =
-        "LISTENING";
-
-    emergencyData.callStartedAt =
-        new Date().toISOString();
-
-    emergencyData.dispatchTimeline.push({
-        time: new Date().toLocaleTimeString(),
-        event: "Emergency call received"
-    });
-
-
-    // AI greeting
-
-    emergencyData.transcript.push({
-        speaker: "AI",
-        message:
-            "Hello. Emergency AI is here to help. Please stay calm.",
-        time:
-            new Date().toLocaleTimeString()
-    });
-
-    await wait(1500);
-
-
-    // STEP 2 — LANGUAGE
-
-    emergencyData.language =
-        "Telugu";
-
-    emergencyData.dispatchTimeline.push({
-        time: new Date().toLocaleTimeString(),
-        event:
-            "Language detected: Telugu"
-    });
-
-
-    // STEP 3 — QUESTION
-
-    emergencyData.aiStatus =
-        "ASKING_QUESTIONS";
-
-    emergencyData.question =
-        "What happened? Please describe the emergency.";
-
-    emergencyData.transcript.push({
-        speaker: "AI",
-        message:
-            emergencyData.question,
-        time:
-            new Date().toLocaleTimeString()
-    });
-
-    await wait(1500);
-
-
-    // CALLER RESPONSE
-
-    emergencyData.transcript.push({
-        speaker: "CALLER",
-        message:
-            "There was a road accident. Two people are injured.",
-        time:
-            new Date().toLocaleTimeString()
-    });
-
-    emergencyData.answers.whatHappened =
-        "Road accident";
-
-    emergencyData.answers.patients =
-        "2";
-
-    await wait(1200);
-
-
-    // QUESTION 2
-
-    emergencyData.question =
-        "Is anyone unconscious or having difficulty breathing?";
-
-    emergencyData.transcript.push({
-        speaker: "AI",
-        message:
-            emergencyData.question,
-        time:
-            new Date().toLocaleTimeString()
-    });
-
-    await wait(1200);
-
-
-    // CALLER RESPONSE
-
-    emergencyData.transcript.push({
-        speaker: "CALLER",
-        message:
-            "One person is unconscious and breathing is difficult.",
-        time:
-            new Date().toLocaleTimeString()
-    });
-
-    emergencyData.answers.conscious =
-        "No";
-
-    emergencyData.answers.breathing =
-        "Difficult";
-
-
-    // PRIORITY
-
-    emergencyData.priority =
-        "CRITICAL";
-
-    emergencyData.aiDecision =
-        "Unconscious patient and breathing difficulty detected. Immediate response required.";
-
-    emergencyData.dispatchTimeline.push({
-        time: new Date().toLocaleTimeString(),
-        event:
-            "Emergency classified as CRITICAL"
-    });
-
-    await wait(1000);
-
-
-    // LOCATION
-
-    emergencyData.location =
-        "Hyderabad, Telangana";
-
-    emergencyData.dispatchTimeline.push({
-        time: new Date().toLocaleTimeString(),
-        event:
-            "Patient location received"
-    });
-
-
-    // DISPATCH
-
-    emergencyData.ambulance =
-        "DISPATCHED";
-
-    emergencyData.dispatchTimeline.push({
-        time: new Date().toLocaleTimeString(),
-        event:
-            "Ambulance dispatched"
-    });
-
-
-    emergencyData.transcript.push({
-        speaker: "AI",
-        message:
-            "Emergency classified as critical. An ambulance has been dispatched to your location.",
-        time:
-            new Date().toLocaleTimeString()
-    });
-
-
-    res.json({
-        success: true,
-        message:
-            "Demo emergency completed",
-        data: emergencyData
-    });
-
-});
+);
 
 
 // ==================================================
 // RESET EMERGENCY
 // ==================================================
 
-app.post("/api/emergency/reset", (req, res) => {
+app.post(
+    "/api/emergency/reset",
+    (req, res) => {
 
-    emergencyData =
-        createEmergency();
+        emergencyData =
+            createEmergency();
 
-    console.log(
-        "🔄 Emergency reset"
-    );
+        console.log(
+            "🔄 Emergency state reset"
+        );
 
-    res.json({
-        success: true,
-        data: emergencyData
-    });
+        res.json({
 
-});
+            success:
+                true,
+
+            message:
+                "Emergency reset",
+
+            data:
+                emergencyData
+
+        });
+
+    }
+);
 
 
 // ==================================================
-// HOME
+// HEALTH CHECK
 // ==================================================
 
-app.get("/", (req, res) => {
+app.get(
+    "/",
+    (req, res) => {
 
-    res.send(
-        "🚑 Emergency AI Backend is running!"
-    );
+        res.send(
+            "🚑 Emergency AI Backend is running!"
+        );
 
-});
+    }
+);
+
+
+// ==================================================
+// HEALTH API
+// ==================================================
+
+app.get(
+    "/health",
+    (req, res) => {
+
+        res.json({
+
+            success:
+                true,
+
+            status:
+                "online",
+
+            websocket:
+                "enabled",
+
+            emergency:
+                emergencyData.status,
+
+            timestamp:
+                new Date().toISOString()
+
+        });
+
+    }
+);
 
 
 // ==================================================
 // START SERVER
+// IMPORTANT:
+// Use server.listen(), NOT app.listen()
+// because WebSocket uses the same server.
 // ==================================================
 
-app.listen(PORT, () => {
+server.listen(
+    PORT,
+    () => {
 
-    console.log(
-        `🚑 Emergency AI Backend running on http://localhost:${PORT}`
-    );
+        console.log(
+            `🚑 Emergency AI Backend running on http://localhost:${PORT}`
+        );
 
-});
+        console.log(
+            `🔌 WebSocket endpoint: ws://localhost:${PORT}/media`
+        );
+
+    }
+);
