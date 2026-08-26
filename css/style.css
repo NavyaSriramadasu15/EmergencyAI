@@ -2597,3 +2597,71 @@ button span {
         align-items: stretch;
     }
 }
+/* ==================================================
+   AVAILABLE HOSPITALS
+================================================== */
+
+.hospital-list {
+    margin-top: 14px;
+}
+
+.hospital-list-title {
+    margin-bottom: 8px;
+    color: #667184;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.hospital-option {
+    padding: 11px 12px;
+    margin-top: 8px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: 0.25s ease;
+}
+
+.hospital-option:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.12);
+}
+
+.selected-hospital {
+    border-color: rgba(92,255,141,0.35);
+    box-shadow: 0 0 18px rgba(92,255,141,0.06);
+}
+
+.hospital-option-main {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.hospital-option-main strong {
+    color: #eef2f7;
+    font-size: 11px;
+}
+
+.hospital-option-main span {
+    color: #758094;
+    font-size: 9px;
+}
+
+.hospital-option-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 7px;
+    color: #7f899a;
+    font-size: 8px;
+}
+
+.hospital-option-info b {
+    margin-left: auto;
+    font-size: 8px;
+}
+
+.hospital-option-info b:has(+ *) {
+    color: #5cff8d;
+}
