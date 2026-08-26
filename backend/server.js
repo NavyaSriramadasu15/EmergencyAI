@@ -1,4 +1,4 @@
-const express = require("express");
+require("express");
 const cors = require("cors");
 const http = require("http");
 const WebSocket = require("ws");
@@ -738,6 +738,182 @@ app.post(
     }
 );
 
+
+// ==================================================
+// VAPI WEBHOOK
+// ==================================================
+
+app.post("/api/vapi/webhook", (req, res) => {
+
+    try {
+
+        console.log("");
+        console.log("========================================");
+        console.log("🤖 VAPI WEBHOOK RECEIVED");
+        console.log("========================================");
+
+        console.log(
+            JSON.stringify(req.body, null, 2)
+        );
+
+        const message = req.body?.message || {};
+        const type = message.type || "";
+
+        if (type === "status-update") {
+
+            const status = message.status;
+
+            console.log(
+                "📞 Vapi call status:",
+                status
+            );
+
+            if (
+                status === "in-progress" ||
+                status === "ringing"
+            ) {
+
+                emergencyData =
+                    createEmergency();
+
+                emergencyData.status =
+                    "CALL_CONNECTED";
+
+                emergencyData.aiStatus =
+                    "LISTENING";
+
+                emergencyData.callStartedAt =
+                    new Date().toISOString();
+
+                const callerNumber =
+                    message.call?.customer?.number;
+
+                if (callerNumber) {
+                    emergencyData.callerNumber =
+                        callerNumber;
+                }
+
+                emergencyData.dispatchTimeline.push({
+
+                    time:
+                        new Date()
+                            .toLocaleTimeString(),
+
+                    event:
+                        "Incoming emergency call received through Vapi"
+
+                });
+
+                console.log(
+                    "🚨 INCOMING EMERGENCY CALL"
+                );
+
+            }
+
+            if (status === "ended") {
+
+                emergencyData.status =
+                    "CALL_COMPLETED";
+
+                emergencyData.aiStatus =
+                    "COMPLETED";
+
+                emergencyData.dispatchTimeline.push({
+
+                    time:
+                        new Date()
+                            .toLocaleTimeString(),
+
+                    event:
+                        "Emergency AI call completed"
+
+                });
+
+                console.log(
+                    "✅ Emergency call completed"
+                );
+
+            }
+
+        }
+
+        if (type === "transcript") {
+
+            const transcript =
+                message.transcript || "";
+
+            const role =
+                message.role || "user";
+
+            if (transcript) {
+
+                emergencyData.transcript.push({
+
+                    speaker:
+                        role === "assistant"
+                            ? "AI"
+                            : "CALLER",
+
+                    message:
+                        transcript,
+
+                    time:
+                        new Date()
+                            .toLocaleTimeString()
+
+                });
+
+                console.log(
+                    `${role}: ${transcript}`
+                );
+
+            }
+
+        }
+
+        if (type === "end-of-call-report") {
+
+            console.log(
+                "📋 Vapi end-of-call report received"
+            );
+
+            const summary =
+                message.artifact?.transcript;
+
+            if (summary) {
+
+                emergencyData.aiDecision =
+                    "AI call summary received";
+
+            }
+
+        }
+
+        res.status(200).json({
+            received: true
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "❌ Vapi webhook error:",
+            error
+        );
+
+        res.status(500).json({
+
+            received: false,
+
+            error:
+                error.message
+
+        });
+
+    }
+
+});
 
 // ==================================================
 // EXOTEL VOICEBOT WEBHOOK
