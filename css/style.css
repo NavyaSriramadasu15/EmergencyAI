@@ -2665,3 +2665,69 @@ button span {
 .hospital-option-info b:has(+ *) {
     color: #5cff8d;
 }
+/* ==================================================
+   HOSPITAL REROUTING STATUS
+================================================== */
+
+.hospital-option {
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.hospital-option:hover {
+    transform: translateY(-2px);
+}
+
+.selected-hospital {
+    border-color: rgba(92, 255, 141, 0.45);
+    box-shadow:
+        0 0 18px rgba(92, 255, 141, 0.08);
+}
+
+.hospital-option-info b {
+    padding: 4px 7px;
+    border-radius: 6px;
+    font-size: 8px;
+    font-weight: 900;
+}
+
+.hospital-option-info b.accepting {
+    color: #5cff8d;
+    background: rgba(92, 255, 141, 0.08);
+}
+
+.hospital-option-info b.limited {
+    color: #e4b967;
+    background: rgba(228, 185, 103, 0.08);
+}
+
+.hospital-option-info b.not-accepting {
+    color: #ff5b52;
+    background: rgba(255, 91, 82, 0.08);
+}
+
+.hospital-rerouted {
+    animation:
+        hospitalReroute 0.8s ease;
+}
+
+@keyframes hospitalReroute {
+
+    0% {
+        transform: translateX(0);
+        box-shadow: 0 0 0 rgba(255, 59, 48, 0);
+    }
+
+    40% {
+        transform: translateX(6px);
+        box-shadow:
+            0 0 22px rgba(255, 59, 48, 0.18);
+    }
+
+    100% {
+        transform: translateX(0);
+        box-shadow: 0 0 0 rgba(255, 59, 48, 0);
+    }
+}
