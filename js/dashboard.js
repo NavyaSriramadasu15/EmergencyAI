@@ -213,6 +213,7 @@ function updateAnimations(data) {
         data.location !== "Waiting for location..."
     ) {
 
+
         locationCard?.classList.add("location-active");
 
     } else {
@@ -645,77 +646,120 @@ async function loadEmergencyData() {
         // ------------------------------
         // HOSPITAL
         // ------------------------------
+// ------------------------------
+// HOSPITAL
+// ------------------------------
 
-        if (
-            data.priority === "CRITICAL" &&
-            data.location &&
-            data.location !== "Waiting for location..."
-        ) {
+if (
+    data.priority === "CRITICAL" &&
+    data.location &&
+    data.location !== "Waiting for location..."
+) {
 
-            setText(
-                "hospitalName",
-                "Nearest Emergency Hospital"
-            );
+    const hospitalData =
+        data.hospital?.selected;
 
-            setText(
-                "hospitalReason",
-                "AI recommends immediate emergency admission."
-            );
+    if (hospitalData) {
 
-            setText(
-                "hospitalDistance",
-                "3.1 km • DEMO"
-            );
+        setText(
+            "hospitalName",
+            hospitalData.name
+        );
 
-            setText(
-                "hospitalCapacity",
-                "REVIEW REQUIRED"
-            );
+        setText(
+            "hospitalReason",
+            `Emergency capacity: ${hospitalData.emergencyCapacity} • Trauma team: ${hospitalData.traumaTeam}`
+        );
 
-            setText(
-                "hospitalAlert",
-                "DEMO READY"
-            );
+        setText(
+            "hospitalDistance",
+            hospitalData.distance
+        );
 
-            setText(
-                "hospitalStatus",
-                "RECOMMENDED"
-            );
+        setText(
+            "hospitalCapacity",
+            `${hospitalData.icuBeds} ICU beds`
+        );
 
-        } else {
+        setText(
+            "hospitalAlert",
+            data.hospital?.alertStatus === "SENT"
+                ? "ALERT SENT"
+                : "NOT SENT"
+        );
 
-            setText(
-                "hospitalName",
-                "Hospital recommendation pending"
-            );
+        setText(
+            "hospitalStatus",
+            hospitalData.status
+        );
 
-            setText(
-                "hospitalReason",
-                "AI will recommend an appropriate emergency facility."
-            );
+    } else {
 
-            setText(
-                "hospitalDistance",
-                "—"
-            );
+        setText(
+            "hospitalName",
+            "Hospital recommendation pending"
+        );
 
-            setText(
-                "hospitalCapacity",
-                "—"
-            );
+        setText(
+            "hospitalReason",
+            "AI will recommend an appropriate emergency facility."
+        );
 
-            setText(
-                "hospitalAlert",
-                "NOT SENT"
-            );
+        setText(
+            "hospitalDistance",
+            "—"
+        );
 
-            setText(
-                "hospitalStatus",
-                "PENDING"
-            );
-        }
+        setText(
+            "hospitalCapacity",
+            "—"
+        );
+
+        setText(
+            "hospitalAlert",
+            "NOT SENT"
+        );
+
+        setText(
+            "hospitalStatus",
+            "PENDING"
+        );
 
     }
+
+} else {
+
+    setText(
+        "hospitalName",
+        "Hospital recommendation pending"
+    );
+
+    setText(
+        "hospitalReason",
+        "AI will recommend an appropriate emergency facility."
+    );
+
+    setText(
+        "hospitalDistance",
+        "—"
+    );
+
+    setText(
+        "hospitalCapacity",
+        "—"
+    );
+
+    setText(
+        "hospitalAlert",
+        "NOT SENT"
+    );
+
+    setText(
+        "hospitalStatus",
+        "PENDING"
+    );
+}
+    }   
 
     catch (error) {
 
