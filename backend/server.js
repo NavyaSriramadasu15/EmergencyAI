@@ -1687,6 +1687,55 @@ const demoHospitals = [
     }
 
 ];
+// ==================================================
+// DEMO HOSPITAL REROUTING
+// ==================================================
+
+setTimeout(() => {
+
+    // Current hospital becomes unavailable
+    demoHospitals[0].status =
+        "NOT_ACCEPTING";
+
+    demoHospitals[0].emergencyCapacity =
+        "FULL";
+
+    demoHospitals[0].icuBeds =
+        0;
+
+    demoHospitals[0].traumaTeam =
+        "BUSY";
+
+    // Find another available hospital
+    const newHospital =
+        demoHospitals.find(
+            hospital =>
+                hospital.status === "ACCEPTING"
+        );
+
+    if (newHospital) {
+
+        emergencyData.hospital.selected =
+            newHospital;
+
+        emergencyData.dispatchTimeline.push({
+
+            time:
+                new Date()
+                    .toLocaleTimeString(),
+
+            event:
+                `${demoHospitals[0].name} became unavailable. Ambulance rerouted to ${newHospital.name}`
+
+        });
+
+        console.log(
+            "🔄 Ambulance rerouted to:",
+            newHospital.name
+        );
+    }
+
+}, 7000);
 
 const selectedHospital =
     demoHospitals.find(
