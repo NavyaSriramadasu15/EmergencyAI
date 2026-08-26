@@ -649,6 +649,9 @@ async function loadEmergencyData() {
 // ------------------------------
 // HOSPITAL
 // ------------------------------
+// ------------------------------
+// HOSPITAL
+// ------------------------------
 
 if (
     data.priority === "CRITICAL" &&
@@ -724,7 +727,6 @@ if (
             "hospitalStatus",
             "PENDING"
         );
-
     }
 
 } else {
@@ -759,7 +761,81 @@ if (
         "PENDING"
     );
 }
-    }   
+
+
+// ==================================================
+// SHOW ALL DEMO HOSPITALS
+// ==================================================
+
+const hospitalList =
+    document.getElementById("hospitalList");
+
+if (
+    hospitalList &&
+    Array.isArray(data.hospital?.hospitals)
+) {
+
+    hospitalList.innerHTML = `
+        <div class="hospital-list-title">
+            AVAILABLE HOSPITALS
+        </div>
+    `;
+
+    data.hospital.hospitals.forEach(
+        hospital => {
+
+            const item =
+                document.createElement("div");
+
+            item.className =
+                "hospital-option";
+
+            if (
+                hospital.id ===
+                data.hospital.selected?.id
+            ) {
+
+                item.classList.add(
+                    "selected-hospital"
+                );
+            }
+
+            item.innerHTML = `
+                <div class="hospital-option-main">
+
+                    <strong>
+                        🏥 ${hospital.name}
+                    </strong>
+
+                    <span>
+                        ${hospital.distance}
+                    </span>
+
+                </div>
+
+                <div class="hospital-option-info">
+
+                    <span>
+                        ICU: ${hospital.icuBeds}
+                    </span>
+
+                    <span>
+                        Trauma: ${hospital.traumaTeam}
+                    </span>
+
+                    <b>
+                        ${hospital.status}
+                    </b>
+
+                </div>
+            `;
+
+            hospitalList.appendChild(item);
+        }
+    );
+}
+
+    }
 
     catch (error) {
 
