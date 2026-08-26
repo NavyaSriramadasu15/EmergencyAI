@@ -982,3 +982,182 @@ if (
     initializeDashboard();
 
 }
+// ==================================================
+// LIVE PATIENT MONITORING
+// ==================================================
+
+const systemLiveButton =
+    document.getElementById("systemLiveButton");
+
+const monitoringOverlay =
+    document.getElementById("monitoringOverlay");
+
+const closeMonitoring =
+    document.getElementById("closeMonitoring");
+
+const closeMonitoringButton =
+    document.getElementById("closeMonitoringButton");
+
+let monitoringTimer = null;
+function openMonitoring() {
+
+    const ambulanceStatus =
+        document.getElementById("ambulanceStatus")
+            ?.textContent
+            ?.trim()
+            .toUpperCase();
+
+    if (ambulanceStatus !== "ARRIVED") {
+
+        alert(
+            "🫀 Live Patient Monitoring will be available after the ambulance reaches the patient."
+        );
+
+        return;
+    }
+
+    if (!monitoringOverlay) return;
+
+    monitoringOverlay.classList.add("active");
+
+    loadMonitoringData();
+}
+
+
+function closeMonitoringModule() {
+
+    if (!monitoringOverlay) return;
+
+    monitoringOverlay.classList.remove("active");
+
+    if (monitoringTimer) {
+
+        clearInterval(
+            monitoringTimer
+        );
+
+        monitoringTimer = null;
+    }
+}
+
+
+systemLiveButton?.addEventListener(
+    "click",
+    openMonitoring
+);
+
+
+closeMonitoring?.addEventListener(
+    "click",
+    closeMonitoringModule
+);
+
+
+closeMonitoringButton?.addEventListener(
+    "click",
+    closeMonitoringModule
+);
+
+async function loadMonitoringData() {
+    
+
+    // Get values already loaded in the main dashboard
+    const mainEmergencyId =
+        document.getElementById("emergencyId")?.textContent?.trim();
+
+    const mainAmbulanceId =
+        document.getElementById("ambulanceId")?.textContent?.trim();
+
+    const mainAmbulanceStatus =
+        document.getElementById("ambulanceStatus")?.textContent?.trim();
+
+    setText(
+        "monitorEmergencyId",
+        mainEmergencyId,
+        "EMG-DEMO"
+    );
+
+    setText(
+        "monitorAmbulanceId",
+        mainAmbulanceId,
+        "AMB-DEMO"
+    );
+
+    setText(
+        "monitorAmbulanceStatus",
+        mainAmbulanceStatus,
+        "EN ROUTE"
+    );
+
+    setText(
+        "monitoringUpdated",
+        "Last updated: " +
+        new Date().toLocaleTimeString()
+    );
+
+    startMonitoringSimulation();
+}
+
+
+function startMonitoringSimulation() {
+
+    if (monitoringTimer) {
+        clearInterval(monitoringTimer);
+    }
+
+    monitoringTimer =
+        setInterval(() => {
+
+            const heartRate =
+                Math.floor(112 + Math.random() * 10);
+
+            const spo2 =
+                Math.floor(89 + Math.random() * 5);
+
+            setText(
+                "monitorHeartRate",
+                heartRate
+            );
+
+            setText(
+                "monitorSpo2",
+                spo2
+            );
+
+            setText(
+                "monitorBloodPressure",
+                "90/60"
+            );
+
+            setText(
+                "monitorConsciousness",
+                "Unconscious"
+            );
+
+            setText(
+                "monitorBleeding",
+                "Severe"
+            );
+
+            setText(
+                "monitorCondition",
+                spo2 <= 90
+                    ? "CRITICAL"
+                    : "HIGH"
+            );
+
+            setText(
+                "monitoringAlertText",
+                spo2 <= 90
+                    ? "SpO₂ dropped. Emergency team should be prepared."
+                    : "Patient condition is being monitored continuously."
+            );
+
+            setText(
+                "monitoringUpdated",
+                "Last updated: " +
+                new Date().toLocaleTimeString()
+            );
+
+        }, 2000);
+}

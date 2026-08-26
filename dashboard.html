@@ -36,11 +36,10 @@
                     <span>INCIDENT</span>
                     <strong id="headerEmergencyId">—</strong>
                 </div>
-
-                <div class="live-status">
-                    <span class="live-dot"></span>
-                    SYSTEM LIVE
-                </div>
+<button class="live-status" id="systemLiveButton" type="button">
+    <span class="live-dot"></span>
+    SYSTEM LIVE
+</button>
 
             </div>
 
@@ -535,7 +534,111 @@
             </section>
 
         </section>
+<!-- LIVE PATIENT MONITORING MODULE -->
+<section class="monitoring-overlay" id="monitoringOverlay">
 
+    <div class="monitoring-module">
+
+        <div class="monitoring-header">
+            <div>
+                <span class="section-kicker">AMBULANCE MONITORING</span>
+                <h2>🫀 Live Patient Monitoring</h2>
+                <p>Continuous patient-condition monitoring</p>
+            </div>
+
+            <button
+                class="monitoring-close"
+                id="closeMonitoring"
+                type="button"
+            >✕</button>
+        </div>
+
+        <div class="monitoring-status">
+            <span class="monitoring-live-dot"></span>
+            MONITORING ACTIVE
+        </div>
+
+        <div class="monitoring-patient-info">
+
+            <div>
+                <span>EMERGENCY ID</span>
+                <strong id="monitorEmergencyId">—</strong>
+            </div>
+
+            <div>
+                <span>AMBULANCE</span>
+                <strong id="monitorAmbulanceId">—</strong>
+            </div>
+
+            <div>
+                <span>STATUS</span>
+                <strong id="monitorAmbulanceStatus">EN ROUTE</strong>
+            </div>
+
+        </div>
+
+        <div class="vitals-grid">
+
+            <div class="vital-card heart">
+                <span>❤️ HEART RATE</span>
+                <strong id="monitorHeartRate">118</strong>
+                <small>BPM</small>
+            </div>
+
+            <div class="vital-card oxygen">
+                <span>🫁 SpO₂</span>
+                <strong id="monitorSpo2">91</strong>
+                <small>%</small>
+            </div>
+
+            <div class="vital-card pressure">
+                <span>🩺 BLOOD PRESSURE</span>
+                <strong id="monitorBloodPressure">90/60</strong>
+                <small>mmHg</small>
+            </div>
+
+            <div class="vital-card consciousness">
+                <span>🧠 CONSCIOUSNESS</span>
+                <strong id="monitorConsciousness">Unconscious</strong>
+            </div>
+
+            <div class="vital-card bleeding">
+                <span>🩸 BLEEDING</span>
+                <strong id="monitorBleeding">Severe</strong>
+            </div>
+
+            <div class="vital-card condition">
+                <span>🚨 CONDITION</span>
+                <strong id="monitorCondition">CRITICAL</strong>
+            </div>
+
+        </div>
+
+        <div class="monitoring-alert">
+            <span>⚠️</span>
+            <div>
+                <strong>Emergency condition requires attention</strong>
+                <p id="monitoringAlertText">
+                    Patient condition is being monitored continuously.
+                </p>
+            </div>
+        </div>
+
+        <div class="monitoring-footer">
+            <span id="monitoringUpdated">Last updated: —</span>
+
+            <button
+                class="back-command-button"
+                id="closeMonitoringButton"
+                type="button"
+            >
+                ← Back to Command Center
+            </button>
+        </div>
+
+    </div>
+
+</section>
     </main>
 
 
