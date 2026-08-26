@@ -1650,6 +1650,95 @@ app.post(
                 "AI emergency response activated"
 
         });
+        // ==================================================
+// DEMO HOSPITAL DATA
+// ==================================================
+
+const demoHospitals = [
+
+    {
+        id: "HOSP-01",
+        name: "City Emergency Hospital",
+        distance: "3.1 km",
+        emergencyCapacity: "HIGH",
+        icuBeds: 3,
+        traumaTeam: "AVAILABLE",
+        status: "ACCEPTING"
+    },
+
+    {
+        id: "HOSP-02",
+        name: "Metro Care Hospital",
+        distance: "4.8 km",
+        emergencyCapacity: "MEDIUM",
+        icuBeds: 1,
+        traumaTeam: "AVAILABLE",
+        status: "LIMITED"
+    },
+
+    {
+        id: "HOSP-03",
+        name: "LifeLine Hospital",
+        distance: "6.2 km",
+        emergencyCapacity: "FULL",
+        icuBeds: 0,
+        traumaTeam: "BUSY",
+        status: "NOT_ACCEPTING"
+    }
+
+];
+
+const selectedHospital =
+    demoHospitals.find(
+        hospital =>
+            hospital.status === "ACCEPTING"
+    );
+
+emergencyData.hospital = {
+
+    hospitals:
+        demoHospitals,
+
+    selected:
+        selectedHospital,
+
+    alertStatus:
+        "SENT",
+
+    patientCondition:
+        emergencyData.priority,
+
+    eta:
+        emergencyData.ambulanceDetails.eta
+
+};
+
+emergencyData.dispatchTimeline.push({
+
+    time:
+        new Date()
+            .toLocaleTimeString(),
+
+    event:
+        `Hospital selected: ${selectedHospital.name}`
+
+});
+
+emergencyData.dispatchTimeline.push({
+
+    time:
+        new Date()
+            .toLocaleTimeString(),
+
+    event:
+        "Patient condition sent to receiving hospital"
+
+});
+
+console.log(
+    "🏥 Hospital selected:",
+    selectedHospital.name
+);
 // ------------------------------------------
 // AMBULANCE ARRIVAL SIMULATION
 // ------------------------------------------
