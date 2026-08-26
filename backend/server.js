@@ -574,6 +574,41 @@ app.post(
                 "Ambulance dispatch initiated"
 
         });
+        emergencyData.ambulance =
+    "EN ROUTE";
+
+emergencyData.dispatchTimeline.push({
+
+    time:
+        new Date()
+            .toLocaleTimeString(),
+
+    event:
+        "Ambulance is en route to patient"
+
+});
+
+setTimeout(() => {
+
+    emergencyData.ambulance =
+        "ARRIVED";
+
+    emergencyData.dispatchTimeline.push({
+
+        time:
+            new Date()
+                .toLocaleTimeString(),
+
+        event:
+            "Ambulance arrived at patient location"
+
+    });
+
+    console.log(
+        "🚑 Ambulance ARRIVED"
+    );
+
+}, 3000);
 
         console.log(
             "📍 Location:",
