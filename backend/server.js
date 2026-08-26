@@ -1650,7 +1650,34 @@ app.post(
                 "AI emergency response activated"
 
         });
+// ------------------------------------------
+// AMBULANCE ARRIVAL SIMULATION
+// ------------------------------------------
 
+setTimeout(() => {
+
+    emergencyData.ambulance =
+        "ARRIVED";
+
+    emergencyData.ambulanceDetails.eta =
+        "ARRIVED";
+
+    emergencyData.dispatchTimeline.push({
+
+        time:
+            new Date()
+                .toLocaleTimeString(),
+
+        event:
+            "Ambulance arrived at patient location"
+
+    });
+
+    console.log(
+        "🚑 Ambulance ARRIVED"
+    );
+
+}, 3000);
 
         res.status(200).json({
 
