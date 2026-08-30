@@ -872,57 +872,136 @@ app.post("/api/vapi/webhook", (req, res) => {
 
         }
 
-        if (type === "transcript") {
+      // ==================================================
+// VAPI TRANSCRIPT
+// ==================================================
 
-            const transcript =
-                message.transcript || "";
+if (type === "transcript") {
+
+    const transcript =
+        message.transcript || "";
+
+    const role =
+        message.role || "user";
+
+    if (transcript) {
+
+        emergencyData.transcript.push({
+
+            speaker:
+                role === "assistant"
+                    ? "AI"
+                    : "CALLER",
+
+            message:
+                transcript,
+
+            time:
+                new Date()
+                    .toLocaleTimeString()
+
+        });
+
+        console.log(
+            `${role}: ${transcript}`
+        );
+
+    }
+
+}
+
+
+// ==================================================
+// VAPI CONVERSATION UPDATE
+// ==================================================
+
+if (type === "conversation-update") {
+
+    const messages =
+        message.conversation?.messages ||
+        message.messages ||
+        [];
+
+    if (Array.isArray(messages)) {
+
+        messages.forEach((item) => {
 
             const role =
-                message.role || "user";
+                item.role || "";
 
-            if (transcript) {
+            const text =
+                item.content ||
+                item.message ||
+                item.transcript ||
+                "";
 
-                emergencyData.transcript.push({
+            if (!text) return;
 
-                    speaker:
-                        role === "assistant"
-                            ? "AI"
-                            : "CALLER",
+            const speaker =
+                role === "assistant"
+                    ? "AI"
+                    : role === "user"
+                        ? "CALLER"
+                        : null;
 
-                    message:
-                        transcript,
+            if (!speaker) return;
 
-                    time:
-                        new Date()
-                            .toLocaleTimeString()
-
-                });
-
-                console.log(
-                    `${role}: ${transcript}`
+            // Prevent duplicate messages
+            const alreadyExists =
+                emergencyData.transcript.some(
+                    existing =>
+                        existing.message === text &&
+                        existing.speaker === speaker
                 );
 
-            }
+            if (alreadyExists) return;
 
-        }
+            emergencyData.transcript.push({
 
-        if (type === "end-of-call-report") {
+                speaker,
+
+                message:
+                    text,
+
+                time:
+                    new Date()
+                        .toLocaleTimeString()
+
+            });
 
             console.log(
-                "📋 Vapi end-of-call report received"
+                `📝 Conversation update [${speaker}]: ${text}`
             );
 
-            const summary =
-                message.artifact?.transcript;
+        });
 
-            if (summary) {
+    }
 
-                emergencyData.aiDecision =
-                    "AI call summary received";
+}
 
-            }
 
-        }
+// ==================================================
+// END OF CALL REPORT
+// ==================================================
+
+if (type === "end-of-call-report") {
+
+    console.log(
+        "📋 Vapi end-of-call report received"
+    );
+
+    const summary =
+        message.artifact?.transcript;
+
+    if (summary) {
+
+        emergencyData.aiDecision =
+            "AI call summary received";
+
+    }
+
+}
+
 
         res.status(200).json({
             received: true
