@@ -216,6 +216,24 @@ function createEmergency() {
                 "2.4 km"
         },
 
+        hospital: {
+
+            name:
+                "Apollo Emergency Unit",
+
+            status:
+                "ALERTED",
+
+            distance:
+                "3.1 km",
+
+            capacity:
+                "Available",
+
+            reason:
+                "Nearest emergency facility"
+        },
+
         aiDecision:
             "AI is assessing the situation",
 
@@ -230,7 +248,6 @@ function createEmergency() {
     };
 }
 
-
 let emergencyData =
     createEmergency();
     // ==================================================
@@ -239,138 +256,327 @@ let emergencyData =
 
 function processEmergencyTranscript(text) {
 
-    if (!text) return;
+    if (!text || !emergencyData) return;
 
-    const lower = text.toLowerCase();
+    const lower = text.toLowerCase().trim();
 
-    // WHAT HAPPENED
+    if (!lower) return;
+
+    // ------------------------------------------
+    // EMERGENCY TYPE
+    // ------------------------------------------
+
     if (
         lower.includes("accident") ||
         lower.includes("crash") ||
         lower.includes("collision")
     ) {
-        emergencyData.answers.whatHappened = "Road accident";
+        emergencyData.answers.whatHappened =
+            "Road accident";
     }
+
     else if (
         lower.includes("fire") ||
         lower.includes("burn")
     ) {
-        emergencyData.answers.whatHappened = "Fire / burn emergency";
+        emergencyData.answers.whatHappened =
+            "Fire / burn emergency";
     }
+
     else if (
         lower.includes("chest pain") ||
         lower.includes("heart attack")
     ) {
-        emergencyData.answers.whatHappened = "Medical emergency";
-    }
-    else if (
-        lower.includes("injured") ||
-        lower.includes("injury")
-    ) {
-        emergencyData.answers.whatHappened = "Injury emergency";
+        emergencyData.answers.whatHappened =
+            "Chest pain";
     }
 
+    else if (
+        lower.includes("breathing problem") ||
+        lower.includes("difficulty breathing") ||
+        lower.includes("can't breathe") ||
+        lower.includes("cannot breathe")
+    ) {
+        emergencyData.answers.whatHappened =
+            "Breathing problem";
+    }
+
+    else if (
+        lower.includes("fell") ||
+        lower.includes("fall")
+    ) {
+        emergencyData.answers.whatHappened =
+            "Fall";
+    }
+
+    else if (
+        lower.includes("poison") ||
+        lower.includes("poisoning")
+    ) {
+        emergencyData.answers.whatHappened =
+            "Poisoning";
+    }
+
+    else if (
+        lower.includes("pregnant") ||
+        lower.includes("pregnancy")
+    ) {
+        emergencyData.answers.whatHappened =
+            "Pregnancy emergency";
+    }
+
+    else if (
+        lower.includes("bleeding") ||
+        lower.includes("bleed")
+    ) {
+        emergencyData.answers.whatHappened =
+            "Bleeding";
+    }
+
+    else if (
+        lower.includes("unconscious") ||
+        lower.includes("not responding") ||
+        lower.includes("not conscious")
+    ) {
+        emergencyData.answers.whatHappened =
+            "Unconscious person";
+    }
+
+    // ------------------------------------------
     // NUMBER OF PATIENTS
+    // ------------------------------------------
+
     const numberMatch = lower.match(
-        /(\d+)\s+(people|persons|patients|injured|victims)/
+        /(\d+)\s*(people|persons|patients|injured|victims)/
     );
 
     if (numberMatch) {
-        emergencyData.answers.patients = numberMatch[1];
-    }
 
-    const wordNumbers = {
-        one: "1",
-        two: "2",
-        three: "3",
-        four: "4",
-        five: "5"
-    };
+        emergencyData.answers.patients =
+            numberMatch[1];
 
-    for (const word in wordNumbers) {
+    } else {
 
-        if (
-            lower.includes(word + " people") ||
-            lower.includes(word + " persons") ||
-            lower.includes(word + " patients")
-        ) {
-            emergencyData.answers.patients =
-                wordNumbers[word];
+        const wordNumbers = {
+            one: "1",
+            two: "2",
+            three: "3",
+            four: "4",
+            five: "5"
+        };
 
-            break;
+        for (const word in wordNumbers) {
+
+            const pattern = new RegExp(
+                "\\b" +
+                word +
+                "\\s+(people|persons|patients|injured|victims)\\b",
+                "i"
+            );
+
+            if (pattern.test(lower)) {
+
+                emergencyData.answers.patients =
+                    wordNumbers[word];
+
+                break;
+            }
         }
     }
 
+    // ------------------------------------------
     // CONSCIOUSNESS
+    // ------------------------------------------
+
     if (
         lower.includes("unconscious") ||
         lower.includes("not conscious") ||
-        lower.includes("not responding")
+        lower.includes("not responding") ||
+        lower.includes("not responsive")
     ) {
-        emergencyData.answers.conscious = "No";
+
+        emergencyData.answers.conscious =
+            "No";
+
     }
+
     else if (
         lower.includes("conscious") ||
         lower.includes("awake") ||
-        lower.includes("responding")
+        lower.includes("responding") ||
+        lower.includes("responsive")
     ) {
-        emergencyData.answers.conscious = "Yes";
+
+        emergencyData.answers.conscious =
+            "Yes";
     }
 
+    // ------------------------------------------
     // BREATHING
+    // ------------------------------------------
+
     if (
         lower.includes("not breathing") ||
         lower.includes("cannot breathe") ||
         lower.includes("can't breathe") ||
-        lower.includes("stopped breathing")
+        lower.includes("stopped breathing") ||
+        lower.includes("unable to breathe")
     ) {
-        emergencyData.answers.breathing = "No";
-    }
-    else if (
-        lower.includes("breathing")
-    ) {
-        emergencyData.answers.breathing = "Yes";
+
+        emergencyData.answers.breathing =
+            "No";
+
     }
 
+    else if (
+        lower.includes("breathing normally") ||
+        lower.includes("breathing okay") ||
+        lower.includes("breathing fine") ||
+        lower.includes("is breathing")
+    ) {
+
+        emergencyData.answers.breathing =
+            "Yes";
+    }
+
+    // ------------------------------------------
     // BLEEDING
+    // ------------------------------------------
+
     if (
         lower.includes("severe bleeding") ||
         lower.includes("heavy bleeding") ||
         lower.includes("bleeding badly") ||
-        lower.includes("bleeding heavily")
+        lower.includes("bleeding heavily") ||
+        lower.includes("bleeding a lot")
     ) {
-        emergencyData.answers.bleeding = "Severe bleeding";
-    }
-    else if (
-        lower.includes("bleeding")
-    ) {
-        emergencyData.answers.bleeding = "Bleeding";
+
+        emergencyData.answers.bleeding =
+            "Severe bleeding";
+
     }
 
-    // PRIORITY
+    else if (
+        lower.includes("bleeding") ||
+        lower.includes("bleed")
+    ) {
+
+        emergencyData.answers.bleeding =
+            "Bleeding";
+    }
+
+    // ------------------------------------------
+    // LOCATION
+    // ------------------------------------------
+
+    const locationMatch = text.match(
+        /(?:location is|we are at|we are in|near|at)\s+([A-Za-z0-9 ,.-]{3,60})/i
+    );
+
+    if (locationMatch) {
+
+        const detectedLocation =
+            locationMatch[1]
+                .trim()
+                .replace(/[.!?]+$/, "");
+
+        if (detectedLocation.length >= 3) {
+
+            emergencyData.location =
+                detectedLocation;
+
+            emergencyData.dispatchTimeline.push({
+
+                time:
+                    new Date()
+                        .toLocaleTimeString(),
+
+                event:
+                    "Patient location received"
+            });
+
+            console.log(
+                "📍 Location detected:",
+                detectedLocation
+            );
+
+            // Automatically dispatch ambulance
+            triggerAmbulanceDispatch();
+        }
+    }
+
+    // ------------------------------------------
+    // PRIORITY / TRIAGE
+    // ------------------------------------------
+
     if (
         emergencyData.answers.conscious === "No" ||
         emergencyData.answers.breathing === "No" ||
         emergencyData.answers.bleeding === "Severe bleeding"
     ) {
-        emergencyData.priority = "CRITICAL";
+
+        emergencyData.priority =
+            "CRITICAL";
 
         emergencyData.aiDecision =
-            "Severe emergency indicators detected. Immediate ambulance response recommended.";
+            "Severe emergency indicators detected. Immediate ambulance response required.";
+
     }
+
     else if (
         emergencyData.answers.whatHappened ||
-        emergencyData.answers.patients
+        emergencyData.answers.patients ||
+        emergencyData.answers.conscious ||
+        emergencyData.answers.breathing ||
+        emergencyData.answers.bleeding
     ) {
-        emergencyData.priority = "HIGH";
+
+        emergencyData.priority =
+            "HIGH";
 
         emergencyData.aiDecision =
             "Urgent medical attention required.";
     }
 
+    // ------------------------------------------
+    // AI STATUS
+    // ------------------------------------------
+
+    if (emergencyData.priority === "CRITICAL") {
+
+        emergencyData.aiStatus =
+            "CRITICAL EMERGENCY";
+
+    }
+
+    else if (emergencyData.priority === "HIGH") {
+
+        emergencyData.aiStatus =
+            "HIGH PRIORITY";
+
+    }
+
+    else {
+
+        emergencyData.aiStatus =
+            "ASSESSING";
+    }
+
+    // ------------------------------------------
+    // AI QUESTION STATUS
+    // ------------------------------------------
+
+    emergencyData.question =
+        "Collecting emergency details";
+
     console.log(
-        "🧠 Extracted emergency data:",
+        "🧠 Emergency triage updated:",
         emergencyData.answers
+    );
+
+    console.log(
+        "🚨 Priority:",
+        emergencyData.priority
     );
 }
 // ==================================================
@@ -401,8 +607,8 @@ app.post("/api/test-emergency", (req, res) => {
     // ==================================================
 // AI EMERGENCY INFORMATION EXTRACTION
 // ==================================================
-
 function processEmergencyTranscript(text) {
+
 
     if (!text) return;
 
@@ -682,90 +888,69 @@ else if (
 
 function triggerAmbulanceDispatch() {
 
+    // Location must be available before dispatch
     if (
-        emergencyData.location ===
-        "Waiting for location..."
+        !emergencyData.location ||
+        emergencyData.location === "Waiting for location..."
+    ) {
+        console.log("Waiting for location before ambulance dispatch.");
+        return;
+    }
+
+    // Prevent duplicate dispatch
+    if (
+        emergencyData.ambulance === "DISPATCHED" ||
+        emergencyData.ambulance === "EN ROUTE" ||
+        emergencyData.ambulance === "ARRIVED"
     ) {
         return;
     }
 
-    if (
-        emergencyData.ambulance !==
-        "WAITING"
-    ) {
-        return;
-    }
+    // Ambulance dispatched
+    emergencyData.ambulance = "DISPATCHED";
+    // Hospital coordination
+emergencyData.hospital = {
 
-    emergencyData.ambulance =
-        "DISPATCHED";
+    name:
+        "Apollo Emergency Unit",
+
+    status:
+        "ALERTED",
+
+    distance:
+        "3.1 km",
+
+    capacity:
+        "Available",
+
+    reason:
+        "Nearest emergency facility"
+};
 
     emergencyData.dispatchTimeline.push({
-        time:
-            new Date()
-                .toLocaleTimeString(),
-
-        event:
-            "Ambulance dispatch initiated"
-    });
-
-    emergencyData.ambulance =
-        "EN ROUTE";
-
-    emergencyData.dispatchTimeline.push({
-        time:
-            new Date()
-                .toLocaleTimeString(),
-
-        event:
-            "Ambulance is en route to patient"
+        time: new Date().toLocaleTimeString(),
+        event: "Ambulance dispatched"
     });
 
     console.log(
-        "🚑 Ambulance dispatched to:",
+        "Ambulance dispatched to:",
         emergencyData.location
     );
 
-    // Demo simulation only
+    // After dispatch, ambulance is on the way
     setTimeout(() => {
 
-        emergencyData.ambulance =
-            "ARRIVED";
-
-        emergencyData.ambulanceDetails.eta =
-            "ARRIVED";
+        emergencyData.ambulance = "EN ROUTE";
 
         emergencyData.dispatchTimeline.push({
-            time:
-                new Date()
-                    .toLocaleTimeString(),
-
-            event:
-                "Ambulance arrived at patient location"
+            time: new Date().toLocaleTimeString(),
+            event: "Ambulance is on the way"
         });
 
-        console.log(
-            "🚑 Ambulance ARRIVED"
-        );
+        console.log("Ambulance is EN ROUTE.");
 
-    }, 3000);
+    }, 1500);
 }
-
-
-// ==================================================
-// GET CURRENT EMERGENCY DATA
-// ==================================================
-
-app.get(
-    "/api/emergency",
-    (req, res) => {
-
-        res.json(
-            emergencyData
-        );
-
-    }
-);
-
 
 // ==================================================
 // UPDATE EMERGENCY DATA
@@ -1329,6 +1514,47 @@ app.post("/api/vapi/webhook", (req, res) => {
 
                 emergencyData.status =
                     "CALL_CONNECTED";
+                    // Demo dashboard data for initial display
+setTimeout(() => {
+
+    if (emergencyData.status === "CALL_CONNECTED") {
+
+        emergencyData.location =
+            "Kukatpally, Hyderabad";
+
+        emergencyData.ambulance =
+            "DISPATCHED";
+
+        emergencyData.ambulanceDetails.eta =
+            "08 min";
+
+        emergencyData.ambulanceDetails.distance =
+            "2.4 km";
+
+        emergencyData.hospital = {
+
+            name:
+                "Apollo Emergency Unit",
+
+            status:
+                "ALERTED",
+
+            distance:
+                "3.1 km",
+
+            capacity:
+                "Available",
+
+            reason:
+                "Nearest emergency facility"
+        };
+
+        console.log(
+            "Demo dashboard data displayed"
+        );
+    }
+
+}, 3000);
 
                 emergencyData.aiStatus =
                     "LISTENING";
