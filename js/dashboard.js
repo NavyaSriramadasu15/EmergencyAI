@@ -438,20 +438,23 @@ async function loadEmergencyData() {
         );
 
 
-        if (data.ambulance === "DISPATCHED") {
+        if (
+    data.ambulance === "DISPATCHED" ||
+    data.ambulance === "EN ROUTE"
+) {
 
-            setText(
-                "ambulanceMessage",
-                "🚑 Ambulance is on the way"
-            );
+    setText(
+        "ambulanceMessage",
+        "🚑 Ambulance is on the way"
+    );
 
-        } else {
+} else {
 
-            setText(
-                "ambulanceMessage",
-                "Waiting for emergency confirmation"
-            );
-        }
+    setText(
+        "ambulanceMessage",
+        "Waiting for emergency confirmation"
+    );
+}
 
 
         // Ambulance details

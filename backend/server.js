@@ -216,23 +216,122 @@ function createEmergency() {
                 "2.4 km"
         },
 
-        hospital: {
+hospital: {
+
+    name:
+        "Apollo Emergency Unit",
+
+    status:
+        "ALERTED",
+
+    distance:
+        "3.1 km",
+
+    capacity:
+        "Available",
+
+    reason:
+        "Nearest emergency facility",
+
+    hospitals: [
+
+        {
+            id:
+                "HOSP-01",
 
             name:
                 "Apollo Emergency Unit",
 
-            status:
-                "ALERTED",
-
             distance:
                 "3.1 km",
 
-            capacity:
-                "Available",
+            emergencyCapacity:
+                "HIGH",
 
-            reason:
-                "Nearest emergency facility"
+            icuBeds:
+                3,
+
+            traumaTeam:
+                "AVAILABLE",
+
+            status:
+                "ACCEPTING"
         },
+
+        {
+            id:
+                "HOSP-02",
+
+            name:
+                "City Emergency Hospital",
+
+            distance:
+                "4.7 km",
+
+            emergencyCapacity:
+                "MEDIUM",
+
+            icuBeds:
+                2,
+
+            traumaTeam:
+                "AVAILABLE",
+
+            status:
+                "ACCEPTING"
+        },
+
+        {
+            id:
+                "HOSP-03",
+
+            name:
+                "Metro Care Hospital",
+
+            distance:
+                "6.2 km",
+
+            emergencyCapacity:
+                "LIMITED",
+
+            icuBeds:
+                1,
+
+            traumaTeam:
+                "AVAILABLE",
+
+            status:
+                "LIMITED"
+        }
+    ],
+
+    selected: {
+
+        id:
+            "HOSP-01",
+
+        name:
+            "Apollo Emergency Unit",
+
+        distance:
+            "3.1 km",
+
+        emergencyCapacity:
+            "HIGH",
+
+        icuBeds:
+            3,
+
+        traumaTeam:
+            "AVAILABLE",
+
+        status:
+            "ACCEPTING"
+    },
+
+    alertStatus:
+        "SENT"
+},
 
         aiDecision:
             "AI is assessing the situation",
