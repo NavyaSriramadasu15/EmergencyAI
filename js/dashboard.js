@@ -653,92 +653,62 @@ async function loadEmergencyData() {
 // HOSPITAL
 // ------------------------------
 
-if (
-    data.priority === "CRITICAL" &&
-    data.location &&
-    data.location !== "Waiting for location..."
-) {
+// ------------------------------
+// HOSPITAL COORDINATION
+// ------------------------------
 
-    const hospitalData =
-        data.hospital?.selected;
+const hospitalData = data.hospital;
 
-    if (hospitalData) {
+if (hospitalData) {
 
-        setText(
-            "hospitalName",
-            hospitalData.name
-        );
+    setText(
+        "hospitalName",
+        hospitalData.name,
+        "Hospital coordination pending"
+    );
 
-        setText(
-            "hospitalReason",
-            `Emergency capacity: ${hospitalData.emergencyCapacity} • Trauma team: ${hospitalData.traumaTeam}`
-        );
+    setText(
+        "hospitalReason",
+        hospitalData.reason,
+        "Emergency facility coordination"
+    );
 
-        setText(
-            "hospitalDistance",
-            hospitalData.distance
-        );
+    setText(
+        "hospitalDistance",
+        hospitalData.distance,
+        "—"
+    );
 
-        setText(
-            "hospitalCapacity",
-            `${hospitalData.icuBeds} ICU beds`
-        );
+    setText(
+        "hospitalCapacity",
+        hospitalData.capacity,
+        "—"
+    );
 
-        setText(
-            "hospitalAlert",
-            data.hospital?.alertStatus === "SENT"
-                ? "ALERT SENT"
-                : "NOT SENT"
-        );
+    setText(
+        "hospitalAlert",
+        hospitalData.status === "ALERTED"
+            ? "ALERT SENT"
+            : hospitalData.status,
+        "PENDING"
+    );
 
-        setText(
-            "hospitalStatus",
-            hospitalData.status
-        );
-
-    } else {
-
-        setText(
-            "hospitalName",
-            "Hospital recommendation pending"
-        );
-
-        setText(
-            "hospitalReason",
-            "AI will recommend an appropriate emergency facility."
-        );
-
-        setText(
-            "hospitalDistance",
-            "—"
-        );
-
-        setText(
-            "hospitalCapacity",
-            "—"
-        );
-
-        setText(
-            "hospitalAlert",
-            "NOT SENT"
-        );
-
-        setText(
-            "hospitalStatus",
-            "PENDING"
-        );
-    }
+    setText(
+        "hospitalStatus",
+        hospitalData.status,
+        "PENDING"
+    );
 
 } else {
 
     setText(
         "hospitalName",
-        "Hospital recommendation pending"
+        "Hospital coordination pending"
     );
 
     setText(
         "hospitalReason",
-        "AI will recommend an appropriate emergency facility."
+        "Emergency facility will be coordinated."
     );
 
     setText(
@@ -753,7 +723,7 @@ if (
 
     setText(
         "hospitalAlert",
-        "NOT SENT"
+        "PENDING"
     );
 
     setText(
@@ -761,7 +731,6 @@ if (
         "PENDING"
     );
 }
-
 
 // ==================================================
 // SHOW ALL DEMO HOSPITALS
@@ -1102,182 +1071,5 @@ if (
     initializeDashboard();
 
 }
-// ==================================================
-// LIVE PATIENT MONITORING
-// ==================================================
-
-const systemLiveButton =
-    document.getElementById("systemLiveButton");
-
-const monitoringOverlay =
-    document.getElementById("monitoringOverlay");
-
-const closeMonitoring =
-    document.getElementById("closeMonitoring");
-
-const closeMonitoringButton =
-    document.getElementById("closeMonitoringButton");
-
-let monitoringTimer = null;
-function openMonitoring() {
-
-    const ambulanceStatus =
-        document.getElementById("ambulanceStatus")
-            ?.textContent
-            ?.trim()
-            .toUpperCase();
-
-    if (ambulanceStatus !== "ARRIVED") {
-
-        alert(
-            "🫀 Live Patient Monitoring will be available after the ambulance reaches the patient."
-        );
-
-        return;
-    }
-
-    if (!monitoringOverlay) return;
-
-    monitoringOverlay.classList.add("active");
-
-    loadMonitoringData();
-}
 
 
-function closeMonitoringModule() {
-
-    if (!monitoringOverlay) return;
-
-    monitoringOverlay.classList.remove("active");
-
-    if (monitoringTimer) {
-
-        clearInterval(
-            monitoringTimer
-        );
-
-        monitoringTimer = null;
-    }
-}
-
-
-systemLiveButton?.addEventListener(
-    "click",
-    openMonitoring
-);
-
-
-closeMonitoring?.addEventListener(
-    "click",
-    closeMonitoringModule
-);
-
-
-closeMonitoringButton?.addEventListener(
-    "click",
-    closeMonitoringModule
-);
-
-async function loadMonitoringData() {
-    
-
-    // Get values already loaded in the main dashboard
-    const mainEmergencyId =
-        document.getElementById("emergencyId")?.textContent?.trim();
-
-    const mainAmbulanceId =
-        document.getElementById("ambulanceId")?.textContent?.trim();
-
-    const mainAmbulanceStatus =
-        document.getElementById("ambulanceStatus")?.textContent?.trim();
-
-    setText(
-        "monitorEmergencyId",
-        mainEmergencyId,
-        "EMG-DEMO"
-    );
-
-    setText(
-        "monitorAmbulanceId",
-        mainAmbulanceId,
-        "AMB-DEMO"
-    );
-
-    setText(
-        "monitorAmbulanceStatus",
-        mainAmbulanceStatus,
-        "EN ROUTE"
-    );
-
-    setText(
-        "monitoringUpdated",
-        "Last updated: " +
-        new Date().toLocaleTimeString()
-    );
-
-    startMonitoringSimulation();
-}
-
-
-function startMonitoringSimulation() {
-
-    if (monitoringTimer) {
-        clearInterval(monitoringTimer);
-    }
-
-    monitoringTimer =
-        setInterval(() => {
-
-            const heartRate =
-                Math.floor(112 + Math.random() * 10);
-
-            const spo2 =
-                Math.floor(89 + Math.random() * 5);
-
-            setText(
-                "monitorHeartRate",
-                heartRate
-            );
-
-            setText(
-                "monitorSpo2",
-                spo2
-            );
-
-            setText(
-                "monitorBloodPressure",
-                "90/60"
-            );
-
-            setText(
-                "monitorConsciousness",
-                "Unconscious"
-            );
-
-            setText(
-                "monitorBleeding",
-                "Severe"
-            );
-
-            setText(
-                "monitorCondition",
-                spo2 <= 90
-                    ? "CRITICAL"
-                    : "HIGH"
-            );
-
-            setText(
-                "monitoringAlertText",
-                spo2 <= 90
-                    ? "SpO₂ dropped. Emergency team should be prepared."
-                    : "Patient condition is being monitored continuously."
-            );
-
-            setText(
-                "monitoringUpdated",
-                "Last updated: " +
-                new Date().toLocaleTimeString()
-            );
-
-        }, 2000);
-}
